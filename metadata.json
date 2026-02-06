@@ -1,0 +1,7 @@
+{
+  "name": "Gaza Rebuild Hub",
+  "description": "A platform connecting global construction experts with reconstruction projects in Gaza, featuring transparency dashboards and AI-powered planning tools.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
