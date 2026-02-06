@@ -1,13 +1,10 @@
+
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Map, LayoutGrid, Bot, Building2, ArrowUp } from 'lucide-react';
+import { Map, LayoutGrid, Building2, ArrowUp } from 'lucide-react';
 import clsx from 'clsx';
 
-interface NavbarProps {
-  onOpenAssistant: () => void;
-}
-
-export const Navbar: React.FC<NavbarProps> = ({ onOpenAssistant }) => {
+export const Navbar: React.FC = () => {
   const location = useLocation();
   const [imageError, setImageError] = useState(false);
 
@@ -63,13 +60,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAssistant }) => {
             <LayoutGrid className="h-4 w-4" />
             <span>Projects</span>
           </Link>
-          <button 
-            onClick={onOpenAssistant}
-            className="flex items-center space-x-2 bg-brand-success text-white px-4 py-2 rounded-full hover:bg-green-600 transition-all text-sm font-medium ml-4 shadow-lg shadow-green-900/20"
-          >
-            <Bot className="h-4 w-4" />
-            <span>Ask AI Architect</span>
-          </button>
         </div>
       </div>
     </nav>

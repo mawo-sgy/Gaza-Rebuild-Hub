@@ -15,17 +15,33 @@ export enum ProjectStatus {
   COMPLETED = 'Completed'
 }
 
+export const PROJECT_PHASES = ['Planning', 'Foundation', 'Construction', 'Finalizing'];
+
 export interface ProjectUpdate {
   id: string;
   date: string;
   title: string;
   description: string;
-  imageUrl?: string; // For "Before" / "Current" photos
+  author: string; // Added for author attribution
+  imageUrl?: string; 
 }
 
 export interface ExpertNeed {
   role: string; // e.g. "Structural Engineer"
   count: number;
+}
+
+export interface TechnicalBrief {
+  requiredCertifications: string[];
+  estimatedDuration: string;
+  equipmentNeeded: string[];
+  blueprintUrl?: string;
+}
+
+export interface SubProject {
+  id: string;
+  title: string;
+  completion: number; // 0-100 percentage
 }
 
 export interface Project {
@@ -41,25 +57,28 @@ export interface Project {
   raised: number;
   description: string;
   status: ProjectStatus;
+  currentPhase: number; // 0 to 3 index based on PROJECT_PHASES
   imageUrl: string; 
   expertId?: string;
   
   // New Fields for Detail Page
   expertNeeds?: ExpertNeed[];
   updates?: ProjectUpdate[];
+  subProjects?: SubProject[]; // Added for cumulative progress
+  technicalBrief?: TechnicalBrief; 
 }
 
 export interface Expert {
   id: string;
   name: string;
-  email: string; // Added
-  title: string; // Added (Civil Engineer, etc.)
-  yearsExperience: number; // Added
-  location: string; // Added (Country/City)
-  availability: 'Remote' | 'On-site' | 'Both'; // Added
-  bio: string; // Added
-  skills: string[]; // Added
-  specialization: string; // Kept for backward compatibility (mapped from title)
+  email: string; 
+  title: string; 
+  yearsExperience: number; 
+  location: string; 
+  availability: 'Remote' | 'On-site' | 'Both'; 
+  bio: string; 
+  skills: string[]; 
+  specialization: string; 
   verified: boolean;
   imageUrl?: string;
 }

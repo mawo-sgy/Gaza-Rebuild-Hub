@@ -1,49 +1,54 @@
-import { GoogleGenAI, Type } from "@google/genai";
+
+import { GoogleGenAI } from "@google/genai";
 
 // Initialize AI Client
-// Note: In a real app, never expose API_KEY in frontend code. Use a backend proxy.
 const apiKey = process.env.API_KEY || ''; 
 const ai = new GoogleGenAI({ apiKey });
 
-// 1. Thinking Mode: Complex Engineering Analysis
-export const analyzeProjectFeasibility = async (projectDescription: string) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-pro-preview",
-      contents: `Analyze the engineering feasibility and material requirements for this reconstruction project in Gaza: ${projectDescription}. Provide a technical summary.`,
-      config: {
-        thinkingConfig: { thinkingBudget: 32768 }, // Max thinking for deep reasoning
-      }
-    });
-    return response.text;
-  } catch (error) {
-    console.error("Analysis failed:", error);
-    return "Unable to analyze at this time. Please check API configuration.";
-  }
-};
+export interface ChatContext {
+    totalProjects: number;
+    totalExperts: number;
+    totalFunds: number;
+}
 
-// 2. Search Grounding: Get real-time context
-export const getConstructionStatus = async (query: string) => {
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: query,
-      config: {
-        tools: [{ googleSearch: {} }]
-      }
-    });
+export const createChatSession = (context: ChatContext) => {
+    const systemInstruction = `
+    You are the "AI Architect" for the Gaza Rebuild Hub. 
+    Your role is to assist donors and experts in understanding the reconstruction efforts.
     
-    return {
-      text: response.text,
-      sources: response.candidates?.[0]?.groundingMetadata?.groundingChunks || []
-    };
-  } catch (error) {
-    console.error("Search failed:", error);
-    return { text: "Search unavailable.", sources: [] };
-  }
+    Current Real-Time Stats:
+    - Active Projects: ${context.totalProjects}
+    - Registered Experts: ${context.totalExperts}
+    - Funds Deployed: $${context.totalFunds.toLocaleString()}
+
+    Guidelines:
+    1. Tone: Empathetic, professional, technical but accessible, and hopeful.
+    2. Focus: Strictly on reconstruction, humanitarian aid logistics, engineering requirements, and project funding.
+    3. If asked about politics, politely pivot back to the humanitarian reconstruction mission.
+    4. If asked "How can I help?", suggest two paths: donating funds or registering as an expert if they have skills.
+    5. Be concise.
+    `;
+
+    return ai.chats.create({
+        model: 'gemini-3-flash-preview',
+        config: {
+            systemInstruction: systemInstruction,
+            temperature: 0.7,
+        }
+    });
 };
 
-// 3. Image Generation: Visualize the Result
+export const sendMessageToChat = async (chatSession: any, message: string) => {
+    try {
+        const result = await chatSession.sendMessage({ message });
+        return result.text;
+    } catch (error) {
+        console.error("Gemini Chat Error:", error);
+        return "I'm having trouble connecting to the satellite network. Please try again in a moment.";
+    }
+};
+
+// Legacy support for specific tools if needed separately
 export const generateProjectRender = async (prompt: string, size: '1K' | '2K' | '4K' = '1K') => {
   try {
     const response = await ai.models.generateContent({
@@ -59,7 +64,6 @@ export const generateProjectRender = async (prompt: string, size: '1K' | '2K' | 
       }
     });
 
-    // Extract image
     for (const part of response.candidates?.[0]?.content?.parts || []) {
       if (part.inlineData) {
         return `data:image/png;base64,${part.inlineData.data}`;
@@ -71,20 +75,3 @@ export const generateProjectRender = async (prompt: string, size: '1K' | '2K' | 
     return null;
   }
 };
-
-// 4. Maps Grounding: Find nearby resources
-export const findNearbyResources = async (location: string, resourceType: string) => {
-   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: `Find ${resourceType} near ${location} in Gaza.`,
-      config: {
-        tools: [{googleMaps: {}}],
-      },
-    });
-    return response.text;
-   } catch (error) {
-     console.error("Maps failed:", error);
-     return "Map data unavailable.";
-   }
-}
